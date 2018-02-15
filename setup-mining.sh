@@ -1,8 +1,8 @@
 #!/bin/bash
 #/ Script Name: setup-mining.sh
 #/ Author: DAVIDHAZELDENUK
-#  Date:   01-02-2018
-#/
+#/ Date:   01-02-2018
+#/ VERSION: Version 1.01
 #/ Error Log Location /tmp/setup-mining.sh.log
 #/
 #/ Usage: setup-mining.sh
@@ -10,6 +10,7 @@
 #/
 #/ Options:
 #/   --help, -h display this help
+#Some of this script is from multi miner for the menus. thanks.
 
 
 
