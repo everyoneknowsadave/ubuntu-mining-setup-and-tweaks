@@ -2,7 +2,7 @@
 #/ Script Name: setup-mining.sh
 #/ Author: DAVIDHAZELDENUK
 #/ Date:   01-02-2018
-#/ VERSION: Version 1.01
+#/ VERSION: Version 1.02
 #/ Error Log Location /tmp/setup-mining.sh.log
 #/
 #/ Usage: setup-mining.sh
@@ -97,72 +97,71 @@ set_fan_speed_menu() {
         echo "============================================================"
         echo "*               NVIDIA TWEAK SETTINGS                      *"
         echo "============================================================"
-	echo "40	Fix Nvidia-Settings - failed to connect to mir    "
-        echo "50	Setup Coolbits Config, do this first!             "
-	echo "100.      Set Fan Speed type Value between 40 and 100       "
-	echo "200.	Disable Fan Speed Persistence - reset             "
-        echo "999.      Back to Main Menu                                 "
-        echo "000.      Exit Program                                      "
+        echo "40.	Fix Nvidia-Settings - failed to connect to mir          "
+        echo "50.	Setup Coolbits Config, do this first!                   "
+        echo "100. Set Fan Speed type Value between 40 and 100            "
+        echo "200. Disable Fan Speed Persistence - reset                  "
+        echo "999. Back to Main Menu                                      "
+        echo "000. Exit Program                                           "
         read -p "Enter choice [ 40 - 1000 ] " choice
     fi
     case $choice in
         40)
-		echo "fixing...fixed hopefully...display nvidia-settings now..."
-		export DISPLAY=:0
-		nvidia-settings
-	;;
+                echo "fixing...fixed hopefully...display nvidia-settings now..."
+                export DISPLAY=:0
+                nvidia-settings
+        ;;
         50)
-		echo "setting coolbits to allow modification"
-		nvidia-xconfig -a --force-generate --allow-empty-initial-configuration --cool-bits=12 --registry-dwords="PerfLevelSrc=0x2222" --no-sli --connected-monitor="DFP-0"
-	;;
-         100)
-			read -p "Enter a fan speed between 40 and 100 to set speed" inputfanspeed
-			# Read a numerical command line arg between 40 and 100
-			if [ "$inputfanspeed" -eq "$inputfanspeed" ] 2>/dev/null && [ "0$inputfanspeed" -ge "40" ]  && [ "0$inputfanspeed" -le "100" ]
-			then
-				/usr/bin/nvidia-smi -pm 1 # enable persistance mode
-				speed=$inputfanspeed   # set speed
+            		echo "setting coolbits to allow modification"
+            		nvidia-xconfig -a --force-generate --allow-empty-initial-configuration --cool-bits=12 --registry-dwords="PerfLevelSrc=0x2222" --no-sli --connected-monitor="DFP-0"
+        ;;
+        100)
+          			read -p "Enter a fan speed between 40 and 100 to set speed: " inputfanspeed
+                if [ "$inputfanspeed" -eq "$inputfanspeed" ] 2>/dev/null && [ "0$inputfanspeed" -ge "40" ]  && [ "0$inputfanspeed" -le "100" ]
+                then
+                	/usr/bin/nvidia-smi -pm 1 # enable persistance mode
+                	speed=$inputfanspeed   # set speed
+                
+                	echo "Setting fan to $speed%."
+                
+                	# how many GPU's are in the system?
+                	NUMGPU="$(nvidia-smi -L | wc -l)"
+                
+                	# loop through each GPU and individually set fan speed
+                	n=0
+                	while [  $n -lt  $NUMGPU ];
+                	do
+                		# start an x session, and call nvidia-settings to enable fan control and set speed
+                		service lightdm stop
+                		xinit /usr/bin/nvidia-settings -a [gpu:${n}]/GPUFanControlState=1 -a [fan:${n}]/GPUTargetFanSpeed=$speed --  :0 -once
+                		let n=n+1
+                	done
+                
+                	echo "Complete"; exit 0;
+                else
+                	echo "Error: Please pick a fan speed between 40 and 100, or stop."; exit 1;
+                fi
 
-				echo "Setting fan to $speed%."
-
-				# how many GPU's are in the system?
-				NUMGPU="$(nvidia-smi -L | wc -l)"
-
-				# loop through each GPU and individually set fan speed
-				n=0
-				while [  $n -lt  $NUMGPU ];
-				do
-					# start an x session, and call nvidia-settings to enable fan control and set speed
-					service lightdm stop
-					xinit /usr/bin/nvidia-settings -a [gpu:${n}]/GPUFanControlState=1 -a [fan:${n}]/GPUTargetFanSpeed=$speed --  :0 -once
-					let n=n+1
-				done
-
-				echo "Complete"; exit 0;
-			else
-				echo "Error: Please pick a fan speed between 40 and 100, or stop."; exit 1;
-			fi
-
-	;;
-	200)
-				/usr/bin/nvidia-smi -pm 0 # disable persistance mode
-
-				echo "Enabling default auto fan control."
-				echo "Detecting  how many GPUs are in the system..."
-				# how many GPU's are in the system?
-				NUMGPU="$(nvidia-smi -L | wc -l)"
-				echo "Counted $NUMGPU ..."
-				# loop through each GPU and individually set fan speed
-				n=0
-				while [  $n -lt  $NUMGPU ];
-				do
-					# start an x session, and call nvidia-settings to enable fan control and set speed
-					service lightdm stop
-					xinit /usr/bin/nvidia-settings -a [gpu:${n}]/GPUFanControlState=0 --  :0 -once
-					let n=n+1
-				done
-
-				echo "Complete"; exit 0;
+        ;;
+        200)
+                /usr/bin/nvidia-smi -pm 0 # disable persistance mode
+                
+                echo "Enabling default auto fan control."
+                echo "Detecting  how many GPUs are in the system..."
+                # how many GPU's are in the system?
+                NUMGPU="$(nvidia-smi -L | wc -l)"
+                echo "Counted $NUMGPU ..."
+                # loop through each GPU and individually set fan speed
+                n=0
+                while [  $n -lt  $NUMGPU ];
+                do
+                	# start an x session, and call nvidia-settings to enable fan control and set speed
+                	service lightdm stop
+                	xinit /usr/bin/nvidia-settings -a [gpu:${n}]/GPUFanControlState=0 --  :0 -once
+                	let n=n+1
+                done
+                
+                echo "Complete"; exit 0;
 
         ;;
         999)
