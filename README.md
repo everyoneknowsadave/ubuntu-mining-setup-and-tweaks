@@ -6,3 +6,4 @@ NVIDIA ONLY CURRENTLY! USE AT YOUR OWN RISK
 
 Version 1.01 - Only Tested in Ubuntu 16.04 LTS - Needs much more work, problems with XServer sometimes.
 Version 1.02 - Planned - Adding Auto Overclock for NVIDIA
+Version 1.03 - Not Sure
